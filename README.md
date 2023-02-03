@@ -4,7 +4,8 @@ It also shows an overview of packages with license information.\
 We are using [nuget-license](https://github.com/tomchavakis/nuget-license) to do the checks.
 
 ## Inputs
-see action definition [action.yaml](action.yaml)
+see action definition [action.yaml](action.yaml)\
+projectsFilter defaults to "Test.csproj"
 
 ## Example usage
 
