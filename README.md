@@ -1,6 +1,7 @@
 # nuget-license-check-action
 This action checks licenses of nuget packages and fails if finding licenses that are not allowed.\
-It also shows an overview of packages with license information.
+It also shows an overview of packages with license information.\
+We are using [nuget-license](https://github.com/tomchavakis/nuget-license) to do the checks.
 
 ## Inputs
 see action definition [action.yaml](action.yaml)
