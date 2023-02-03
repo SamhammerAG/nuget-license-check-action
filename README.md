@@ -26,3 +26,9 @@ Shows which package uses which licenses.
  | AspNetCore.HealthChecks.SqlServer                                   | 6.0.2                  | Apache-2.0      | https://licenses.nuget.org/Apache-2.0                                                  | 
  | AspNetCore.HealthChecks.UI.Client                                   | 6.0.2                  | Apache-2.0      | https://licenses.nuget.org/Apache-2.0                                                  | 
 ```
+
+Shows which package uses license that is not allowed.
+```
+NugetUtility.InvalidLicensesException`1[NugetUtility.LibraryInfo]: Only the following licenses are allowed: NONE
+Project () Package(AspNetCore.HealthChecks.Redis-6.0.4) LicenseUrl(https://licenses.nuget.org/Apache-2.0) License Type (Apache-2.0)
+```
