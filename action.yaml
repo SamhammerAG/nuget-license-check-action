@@ -1,0 +1,20 @@
+name: 'nuget-license-check-action'
+description: 'check licenses of nuget packages'
+inputs:
+  projectDir:
+    description: 'Directory with .sln file to check'
+    default: '.'
+    required: true  
+  allowedLicenses:
+    description: 'Allowed licenses as SPDX list e.g. MIT;Apache-2.0'
+    required: false
+  projectsFilter:
+    description: 'List of project patterns to skip, seperated with semicolon. e.g. Test.csproj matches Sample.Test.csproj'
+    default: 'Test.csproj'
+    required: false
+  toolVersion:
+    description: 'Specify version for dotnet tool dotnet-project-licenses'
+    required: false
+runs:
+  using: 'node16'
+  main: 'dist/index.js'

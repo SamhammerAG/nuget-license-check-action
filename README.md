@@ -16,4 +16,13 @@ with:
 ```
 
 ## Sample Outputs
-TODO
+
+Shows which package uses which licenses.
+```
+| Reference                                                           | Version                | License Type    | License                                                                                | 
+ |---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| 
+ | AngleSharp                                                          | 0.16.1                 | MIT             | https://licenses.nuget.org/MIT                                                         | 
+ | AspNetCore.HealthChecks.Redis                                       | 6.0.4                  | Apache-2.0      | https://licenses.nuget.org/Apache-2.0                                                  | 
+ | AspNetCore.HealthChecks.SqlServer                                   | 6.0.2                  | Apache-2.0      | https://licenses.nuget.org/Apache-2.0                                                  | 
+ | AspNetCore.HealthChecks.UI.Client                                   | 6.0.2                  | Apache-2.0      | https://licenses.nuget.org/Apache-2.0                                                  | 
+```

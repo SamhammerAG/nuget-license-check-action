@@ -1,0 +1,26 @@
+{
+  "name": "nuget-license-check-action",
+  "version": "1.0.0",
+  "main": "src/main.js",
+  "repository": "git@github.com:SamhammerAG/nuget-license-check-action.git",
+  "author": "Roland Schmitt <rschmitt@samhammer.de>",
+  "license": "MIT",
+  "scripts": {
+    "build": "ncc build src/main.ts",
+    "run": "ncc build src/main.ts && node dist/index.js --projectDir ./sample --projectsFilter Test.csproj",
+    "run-invalid": "ncc build src/main.ts && node dist/index.js --projectDir ./sample --projectsFilter Test.csproj --allowedLicenses NONE"
+  },
+  "devDependencies": {
+    "@types/node": "^18.11.18",
+    "@vercel/ncc": "^0.36.1",
+    "typescript": "^4.9.5"
+  },
+  "dependencies": {
+    "@actions/core": "^1.10.0",
+    "@actions/exec": "^1.1.1",
+    "@types/lodash": "^4.14.191",
+    "@types/minimist": "^1.2.2",
+    "lodash": "^4.17.21",
+    "minimist": "^1.2.7"
+  }
+}
