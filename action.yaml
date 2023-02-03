@@ -9,7 +9,7 @@ inputs:
     description: 'Allowed licenses as SPDX list e.g. MIT;Apache-2.0'
     required: false
   projectsFilter:
-    description: 'List of project patterns to skip, seperated with semicolon. e.g. Test.csproj matches Sample.Test.csproj'
+    description: 'List of project patterns to skip e.g. Test.csproj;Xunit.csproj'
     default: 'Test.csproj'
     required: false
   toolVersion:
