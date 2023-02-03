@@ -19,7 +19,7 @@ with:
 
 Shows which package uses which licenses.
 ```
-| Reference                                                           | Version                | License Type    | License                                                                                | 
+ | Reference                                                           | Version                | License Type    | License                                                                                | 
  |---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| 
  | AngleSharp                                                          | 0.16.1                 | MIT             | https://licenses.nuget.org/MIT                                                         | 
  | AspNetCore.HealthChecks.Redis                                       | 6.0.4                  | Apache-2.0      | https://licenses.nuget.org/Apache-2.0                                                  | 
