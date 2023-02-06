@@ -4,7 +4,8 @@ It also shows an overview of packages with license information.\
 We are using [nuget-license](https://github.com/tomchavakis/nuget-license) to do the checks.
 
 ## Inputs
-see action definition [action.yaml](action.yaml)
+see action definition [action.yaml](action.yaml)\
+projectsFilter defaults to "Test.csproj"
 
 ## Example usage
 
@@ -28,4 +29,10 @@ Shows which package uses which licenses.
  | MimeMapping                       | 1.0.1.37 | MIT          | https://github.com/zone117x/MimeMapping/blob/master/LICENSE.md  |
  | Polly                             | 7.2.3    | BSD-3-Clause | https://licenses.nuget.org/BSD-3-Clause                         |
  | Swashbuckle.AspNetCore            | 6.2.3    | MIT          | https://licenses.nuget.org/MIT                                  |
+```
+
+Shows which package uses license that is not allowed.
+```
+NugetUtility.InvalidLicensesException`1[NugetUtility.LibraryInfo]: Only the following licenses are allowed: NONE
+Project () Package(AspNetCore.HealthChecks.Redis-6.0.4) LicenseUrl(https://licenses.nuget.org/Apache-2.0) License Type (Apache-2.0)
 ```
