@@ -15,7 +15,7 @@ jobs:
       uses: ./
       with:
         projectDir: ./sample
-        allowedLicenses: MIT;Apache-2.0;BSD-3-Clause
+        allowedLicenses: MIT;Apache-2.0;BSD-3-Clause;MS-PL
     - name: license-check-action with invalid
       id: license_invalid
       uses: ./

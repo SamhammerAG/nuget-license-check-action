@@ -21473,7 +21473,7 @@ const core = __importStar(__nccwpck_require__(186));
 const exec_1 = __nccwpck_require__(514);
 const os = __importStar(__nccwpck_require__(37));
 const path = __importStar(__nccwpck_require__(17));
-const fs = __importStar(__nccwpck_require__(292));
+const fs = __importStar(__nccwpck_require__(147));
 const minimist_1 = __importDefault(__nccwpck_require__(871));
 const lodash_1 = __importDefault(__nccwpck_require__(250));
 const argv = (0, minimist_1.default)(process.argv.slice(2));
@@ -21504,6 +21504,8 @@ function run() {
             const args = ["--input", projectDir, "--unique"];
             yield addProjectsFilter(args, projectsFilter);
             yield addAllowedLicenses(args, allowedLicenses);
+            yield addLicenseUrlMappings(args, projectDir);
+            yield addLicensePackageMappings(args, projectDir);
             yield (0, exec_1.exec)("dotnet-project-licenses", args);
         }
         catch (error) {
@@ -21518,7 +21520,7 @@ function addProjectsFilter(args, projectsFilter) {
             .split(";")
             .filter((x) => x.length > 0)
             .value();
-        yield fs.writeFile(projectsFilterFile, JSON.stringify(projectsFilterList));
+        yield fs.promises.writeFile(projectsFilterFile, JSON.stringify(projectsFilterList));
         args.push("--projects-filter", projectsFilterFile);
     });
 }
@@ -21529,8 +21531,24 @@ function addAllowedLicenses(args, allowedLicenses) {
             .split(";")
             .filter((x) => x.length > 0)
             .value();
-        yield fs.writeFile(allowedLicensesFile, JSON.stringify(allowedLicensesList));
+        yield fs.promises.writeFile(allowedLicensesFile, JSON.stringify(allowedLicensesList));
         args.push("--allowed-license-types", allowedLicensesFile);
+    });
+}
+function addLicenseUrlMappings(args, projectDir) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const licenseUrlFile = path.join(projectDir, "licenseUrls.json");
+        if (fs.existsSync(licenseUrlFile)) {
+            args.push("--licenseurl-to-license-mappings", licenseUrlFile);
+        }
+    });
+}
+function addLicensePackageMappings(args, projectDir) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const licenseInfoFile = path.join(projectDir, "licenseInfos.json");
+        if (fs.existsSync(licenseInfoFile)) {
+            args.push("--manual-package-information", licenseInfoFile);
+        }
     });
 }
 run();
@@ -21575,14 +21593,6 @@ module.exports = require("events");
 
 "use strict";
 module.exports = require("fs");
-
-/***/ }),
-
-/***/ 292:
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("fs/promises");
 
 /***/ }),
 
