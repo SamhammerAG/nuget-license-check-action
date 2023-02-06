@@ -7,6 +7,11 @@ We are using [nuget-license](https://github.com/tomchavakis/nuget-license) to do
 see action definition [action.yaml](action.yaml)\
 projectsFilter defaults to "Test.csproj"
 
+## License Mappings
+This action also supports mappings for nuget packages without licenseType.\
+Supports deprecated licenseUrls, by reading licenseUrls.json in your projectDir. [sample](sample/licenseUrls.json)\
+Supports mapping of packages with licenseFile only, by reading licenseInfos.json in your projectDir. [sample](sample/licenseInfos.json)
+
 ## Example usage
 
 ```yaml
