@@ -16,5 +16,5 @@ inputs:
     description: 'Specify version for dotnet tool dotnet-project-licenses'
     required: false
 runs:
-  using: 'node16'
+  using: 'node20'
   main: 'dist/index.js'
