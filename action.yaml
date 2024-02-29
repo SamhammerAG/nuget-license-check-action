@@ -15,6 +15,9 @@ inputs:
   toolVersion:
     description: 'Specify version for dotnet tool dotnet-project-licenses'
     required: false
+  exportDir:
+    description: 'Directory where licenses.html should be exported to'
+    required: false
 runs:
   using: 'node20'
   main: 'dist/index.js'
