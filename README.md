@@ -19,6 +19,7 @@ uses: SamhammerAG/nuget-license-check-action@v1
 with:
   projectDir: 'sources/app'
   allowedLicenses: 'MIT;Apache-2.0'
+  exportDir: 'sources/app/wwwroot'
 ```
 
 ## Sample Outputs
@@ -41,3 +42,5 @@ Shows which package uses license that is not allowed.
 NugetUtility.InvalidLicensesException`1[NugetUtility.LibraryInfo]: Only the following licenses are allowed: NONE
 Project () Package(AspNetCore.HealthChecks.Redis-6.0.4) LicenseUrl(https://licenses.nuget.org/Apache-2.0) License Type (Apache-2.0)
 ```
+
+With the optional parameter "exportDir" set, you will also get a licenses.html generated to the configured directory. It contains the used nuget packages with it's license and the license text.
