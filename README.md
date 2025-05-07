@@ -5,7 +5,6 @@ We are using [nuget-license](https://github.com/tomchavakis/nuget-license) to do
 
 ## Inputs
 see action definition [action.yaml](action.yaml)\
-projectsFilter defaults to "Test.csproj"
 
 ## License Mappings
 This action also supports mappings for nuget packages without licenseType.\
@@ -18,6 +17,7 @@ Supports mapping of packages with licenseFile only, by reading licenseInfos.json
 uses: SamhammerAG/nuget-license-check-action@v1
 with:
   projectDir: 'sources/app'
+  solutionFileName: 'sample.sln'
   allowedLicenses: 'MIT;Apache-2.0'
   exportDir: 'sources/app/wwwroot'
 ```
