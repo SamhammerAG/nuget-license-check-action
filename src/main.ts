@@ -61,7 +61,6 @@ async function run(): Promise<void> {
     const allowedLicenses: string = argv.allowedLicenses ?? core.getInput("allowedLicenses");
     const exportDir = argv.exportDir ?? core.getInput("exportDir");
 
-
     const args = ["--input", solutionPath];
 
     await addExcludeProjects(args, excludeProjects);
@@ -73,11 +72,14 @@ async function run(): Promise<void> {
     // The duplicate exec is intentional, when using export options, there is no CLI output.
     // Therefore, we must run exec twice, once to capture the output and once to perform the export.
     await exec("nuget-license", args);
-    const tempExportDir = await addExportOptions(args, exportDir);
-    await exec("nuget-license", args);
-    
-    await buildReport(tempExportDir, exportDir);
-    
+
+    if (exportDir) {
+      const tempExportDir = await addExportOptions(args, exportDir);
+      await exec("nuget-license", args);
+      
+      await buildReport(tempExportDir, exportDir);
+    }
+
   } catch (error: unknown) {
     core.setFailed((error as { message: string }).message);
   }

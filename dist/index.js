@@ -26178,9 +26178,8 @@ function run() {
             yield addLicenseUrlMappings(args, projectDir);
             yield addLicensePackageMappings(args, projectDir);
             yield addIgnorePackages(args, projectDir);
-            // const tempExportDir = await addExportOptions(args, exportDir);
-            // await exec("nuget-license", args);
-            // await buildReport(tempExportDir, exportDir);
+            // The duplicate exec is intentional, when using export options, there is no CLI output.
+            // Therefore, we must run exec twice, once to capture the output and once to perform the export.
             yield (0, exec_1.exec)("nuget-license", args);
             const tempExportDir = yield addExportOptions(args, exportDir);
             yield (0, exec_1.exec)("nuget-license", args);
@@ -26253,7 +26252,6 @@ function buildReport(tempExportDir, exportDir) {
         const licensesFile = path.join(exportDir, "licenses.html");
         const tempLicensesFile = path.join(tempExportDir, "licenses.json");
         const licenses = JSON.parse(yield fs.promises.readFile(tempLicensesFile, "utf-8"));
-        //console.log(await toMarkdownTable(licenses));
         yield addLicenseText(licenses, tempExportDir);
         const licensesHtml = yield buildHtml(licenses);
         yield fs.promises.writeFile(licensesFile, licensesHtml);
@@ -26302,18 +26300,6 @@ function extractTextFromHtml(htmlString) {
         parser.write(htmlString);
         parser.end();
         return text;
-    });
-}
-function toMarkdownTable(licenses) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const header = [
-            '| Reference                                | Version    | License Type    | License                                                                |',
-            '|------------------------------------------|------------|-----------------|------------------------------------------------------------------------|'
-        ];
-        const rows = licenses.map(({ PackageId, PackageVersion, License, LicenseUrl }) => {
-            return `| ${PackageId === null || PackageId === void 0 ? void 0 : PackageId.padEnd(40)} | ${PackageVersion === null || PackageVersion === void 0 ? void 0 : PackageVersion.padEnd(10)} | ${License === null || License === void 0 ? void 0 : License.padEnd(15)} | ${LicenseUrl === null || LicenseUrl === void 0 ? void 0 : LicenseUrl.padEnd(70)} |`;
-        });
-        return [...header, ...rows].join('\n');
     });
 }
 run();
