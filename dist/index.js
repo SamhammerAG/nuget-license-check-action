@@ -26181,9 +26181,13 @@ function run() {
             // The duplicate exec is intentional, when using export options, there is no CLI output.
             // Therefore, we must run exec twice, once to capture the output and once to perform the export.
             yield (0, exec_1.exec)("nuget-license", args);
-            const tempExportDir = yield addExportOptions(args, exportDir);
-            yield (0, exec_1.exec)("nuget-license", args);
-            yield buildReport(tempExportDir, exportDir);
+            console.log("exportDir");
+            console.log(exportDir);
+            if (exportDir) {
+                const tempExportDir = yield addExportOptions(args, exportDir);
+                yield (0, exec_1.exec)("nuget-license", args);
+                yield buildReport(tempExportDir, exportDir);
+            }
         }
         catch (error) {
             core.setFailed(error.message);
