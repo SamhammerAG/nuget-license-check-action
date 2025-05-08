@@ -7,7 +7,6 @@ inputs:
     required: true
   solutionFileName:
     description: 'Filename of the .sln file to check (e.g. sample.sln)'
-    default: '.'
     required: true
   allowedLicenses:
     description: 'Allowed licenses as SPDX list e.g. MIT;Apache-2.0'

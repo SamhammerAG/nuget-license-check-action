@@ -9,12 +9,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 1
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: |
-          8.0.x
-          7.0.x
+        dotnet-version: 8.0.x
     - run: dotnet restore sample/Sample.sln
     - run: yarn install --frozen-lockfile
     - name: license-check-action with valid

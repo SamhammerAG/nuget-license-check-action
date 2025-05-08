@@ -30,15 +30,17 @@ with:
 
 Shows which package uses which licenses.
 ```
- | Reference                         | Version  | License Type | License                                                         |
- |-------------------------------------------------------------------------------------------------------------------------------|
- | AspNetCore.HealthChecks.Redis     | 6.0.4    | Apache-2.0   | https://licenses.nuget.org/Apache-2.0                           |
- | AspNetCore.HealthChecks.SqlServer | 6.0.2    | Apache-2.0   | https://licenses.nuget.org/Apache-2.0                           |
- | CompareNETObjects                 | 4.78.0   | MS-PL        | https://www.nuget.org/packages/CompareNETObjects/4.78.0/License |
- | Flurl                             | 3.0.2    | MIT          | https://licenses.nuget.org/MIT                                  |
- | MimeMapping                       | 1.0.1.37 | MIT          | https://github.com/zone117x/MimeMapping/blob/master/LICENSE.md  |
- | Polly                             | 7.2.3    | BSD-3-Clause | https://licenses.nuget.org/BSD-3-Clause                         |
- | Swashbuckle.AspNetCore            | 6.2.3    | MIT          | https://licenses.nuget.org/MIT                                  |
++-----------------------------------+----------+----------------------------+--------------------+-----------------------------------------------------------------+-------------------------------+------------------------------+----------------------------------------------------------------+
+| Package                           | Version  | License Information Origin | License Expression | License Url                                                     | Copyright                     | Authors                      | Package Project Url                                            |
++-----------------------------------+----------+----------------------------+--------------------+-----------------------------------------------------------------+-------------------------------+------------------------------+----------------------------------------------------------------+
+| AspNetCore.HealthChecks.Redis     | 6.0.4    | Expression                 | Apache-2.0         | https://licenses.nuget.org/Apache-2.0                           |                               | Xabaril Contributors         | https://github.com/Xabaril/AspNetCore.Diagnostics.HealthChecks |
+| AspNetCore.HealthChecks.SqlServer | 6.0.2    | Expression                 | Apache-2.0         | https://licenses.nuget.org/Apache-2.0                           |                               | Xabaril Contributors         | https://github.com/Xabaril/AspNetCore.Diagnostics.HealthChecks |
+| CompareNETObjects                 | 4.78.0   | Overwrite                  | MS-PL              | https://www.nuget.org/packages/CompareNETObjects/4.78.0/License |                               |                              |                                                                |
+| Flurl                             | 3.0.2    | Expression                 | MIT                | https://licenses.nuget.org/MIT                                  |                               | Todd Menier                  | https://flurl.dev/                                             |
+| MimeMapping                       | 1.0.1.37 | Url                        | MIT                | https://github.com/zone117x/MimeMapping/blob/master/LICENSE.md  |                               | Matthew Little               | https://github.com/zone117x/MimeMapping                        |
+| Polly                             | 7.2.3    | Expression                 | BSD-3-Clause       | https://licenses.nuget.org/BSD-3-Clause                         | Copyright (c) 2022, App vNext | Michael Wolfenden, App vNext | https://github.com/App-vNext/Polly                             |
+| Swashbuckle.AspNetCore            | 6.2.3    | Expression                 | MIT                | https://licenses.nuget.org/MIT                                  |                               | Swashbuckle.AspNetCore       | https://github.com/domaindrivendev/Swashbuckle.AspNetCore      |
++-----------------------------------+----------+----------------------------+--------------------+-----------------------------------------------------------------+-------------------------------+------------------------------+----------------------------------------------------------------+
 ```
 
 ## Export Licenses

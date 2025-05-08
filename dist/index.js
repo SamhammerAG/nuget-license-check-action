@@ -26172,14 +26172,17 @@ function run() {
             const excludeProjects = (_c = argv.excludeProjects) !== null && _c !== void 0 ? _c : core.getInput("excludeProjects");
             const allowedLicenses = (_d = argv.allowedLicenses) !== null && _d !== void 0 ? _d : core.getInput("allowedLicenses");
             const exportDir = (_e = argv.exportDir) !== null && _e !== void 0 ? _e : core.getInput("exportDir");
-            const tempExportDir = path.join(os.tmpdir(), (0, uuid_1.v4)());
             const args = ["--input", solutionPath];
             yield addExcludeProjects(args, excludeProjects);
             yield addAllowedLicenses(args, allowedLicenses);
             yield addLicenseUrlMappings(args, projectDir);
             yield addLicensePackageMappings(args, projectDir);
             yield addIgnorePackages(args, projectDir);
-            yield addExportOptions(args, exportDir, tempExportDir);
+            // const tempExportDir = await addExportOptions(args, exportDir);
+            // await exec("nuget-license", args);
+            // await buildReport(tempExportDir, exportDir);
+            yield (0, exec_1.exec)("nuget-license", args);
+            const tempExportDir = yield addExportOptions(args, exportDir);
             yield (0, exec_1.exec)("nuget-license", args);
             yield buildReport(tempExportDir, exportDir);
         }
@@ -26190,12 +26193,9 @@ function run() {
 }
 function addExcludeProjects(args, excludeProjects) {
     return __awaiter(this, void 0, void 0, function* () {
-        const excludeProjectsFile = path.join(os.tmpdir(), "excludeProjects.json");
-        const excludeProjectsList = (0, lodash_1.default)(excludeProjects)
-            .split(";")
-            .filter((x) => x.length > 0)
-            .value();
-        yield fs.promises.writeFile(excludeProjectsFile, JSON.stringify(excludeProjectsList));
+        if (!excludeProjects) {
+            return;
+        }
         args.push("--exclude-projects-matching", excludeProjects);
     });
 }
@@ -26234,14 +26234,16 @@ function addIgnorePackages(args, projectDir) {
         }
     });
 }
-function addExportOptions(args, exportDir, tempExportDir) {
+function addExportOptions(args, exportDir) {
     return __awaiter(this, void 0, void 0, function* () {
         if (!exportDir)
-            return;
+            return "";
+        const tempExportDir = path.join(os.tmpdir(), (0, uuid_1.v4)());
         const fileOutput = path.join(tempExportDir, "licenses.json");
         args.push("--file-output", fileOutput);
         args.push("--output", "json");
         args.push("--license-information-download-location", tempExportDir);
+        return tempExportDir;
     });
 }
 function buildReport(tempExportDir, exportDir) {
@@ -26251,7 +26253,7 @@ function buildReport(tempExportDir, exportDir) {
         const licensesFile = path.join(exportDir, "licenses.html");
         const tempLicensesFile = path.join(tempExportDir, "licenses.json");
         const licenses = JSON.parse(yield fs.promises.readFile(tempLicensesFile, "utf-8"));
-        console.log(yield toMarkdownTable(licenses));
+        //console.log(await toMarkdownTable(licenses));
         yield addLicenseText(licenses, tempExportDir);
         const licensesHtml = yield buildHtml(licenses);
         yield fs.promises.writeFile(licensesFile, licensesHtml);
@@ -26260,22 +26262,17 @@ function buildReport(tempExportDir, exportDir) {
 function addLicenseText(licenses, tempExportDir) {
     return __awaiter(this, void 0, void 0, function* () {
         for (const license of licenses) {
-            const licenseTextFile = path.join(tempExportDir, `${license.PackageId}__${license.PackageVersion}.txt`);
-            if (fs.existsSync(licenseTextFile)) {
-                license.LicenseText = yield fs.promises.readFile(licenseTextFile, "utf-8");
+            const base = path.join(tempExportDir, `${license.PackageId}__${license.PackageVersion}`);
+            const txtPath = `${base}.txt`;
+            if (fs.existsSync(txtPath)) {
+                license.LicenseText = yield fs.promises.readFile(txtPath, "utf-8");
+                continue;
             }
-            else {
-                yield addLicenseTextFromHtml(license, tempExportDir);
+            const htmlPath = `${base}.html`;
+            if (fs.existsSync(htmlPath)) {
+                const html = yield fs.promises.readFile(htmlPath, "utf-8");
+                license.LicenseText = yield extractTextFromHtml(html);
             }
-        }
-    });
-}
-function addLicenseTextFromHtml(license, tempExportDir) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const licenseHtmlFile = path.join(tempExportDir, `${license.PackageId}__${license.PackageVersion}.html`);
-        if (fs.existsSync(licenseHtmlFile)) {
-            const htmlText = yield fs.promises.readFile(licenseHtmlFile, "utf-8");
-            license.LicenseText = yield extractTextFromHtml(htmlText);
         }
     });
 }

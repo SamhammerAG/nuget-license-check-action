@@ -60,7 +60,7 @@ async function run(): Promise<void> {
     const excludeProjects: string = argv.excludeProjects ?? core.getInput("excludeProjects");
     const allowedLicenses: string = argv.allowedLicenses ?? core.getInput("allowedLicenses");
     const exportDir = argv.exportDir ?? core.getInput("exportDir");
-    const tempExportDir = path.join(os.tmpdir(), uuidv4());
+
 
     const args = ["--input", solutionPath];
 
@@ -69,23 +69,25 @@ async function run(): Promise<void> {
     await addLicenseUrlMappings(args, projectDir);
     await addLicensePackageMappings(args, projectDir);
     await addIgnorePackages(args, projectDir);
-    await addExportOptions(args, exportDir, tempExportDir);
+    
+    // The duplicate exec is intentional, when using export options, there is no CLI output.
+    // Therefore, we must run exec twice, once to capture the output and once to perform the export.
     await exec("nuget-license", args);
-
+    const tempExportDir = await addExportOptions(args, exportDir);
+    await exec("nuget-license", args);
+    
     await buildReport(tempExportDir, exportDir);
+    
   } catch (error: unknown) {
     core.setFailed((error as { message: string }).message);
   }
 }
 
 async function addExcludeProjects(args: string[], excludeProjects: string) {
-  const excludeProjectsFile = path.join(os.tmpdir(), "excludeProjects.json");
-  const excludeProjectsList = chain(excludeProjects)
-    .split(";")
-    .filter((x) => x.length > 0)
-    .value();
+  if (!excludeProjects) {
+    return;
+  }
 
-  await fs.promises.writeFile(excludeProjectsFile, JSON.stringify(excludeProjectsList));
   args.push("--exclude-projects-matching", excludeProjects);
 }
 
@@ -121,13 +123,16 @@ async function addIgnorePackages(args: string[], projectDir: string) {
   }
 }
 
-async function addExportOptions(args: string[], exportDir: string, tempExportDir: string) {
-  if (!exportDir) return;
+async function addExportOptions(args: string[], exportDir: string): Promise<string> {
+  if (!exportDir) return "";
+  const tempExportDir = path.join(os.tmpdir(), uuidv4());
 
   const fileOutput = path.join(tempExportDir, "licenses.json");
   args.push("--file-output", fileOutput);
   args.push("--output", "json");
   args.push("--license-information-download-location", tempExportDir);
+
+  return tempExportDir;
 }
 
 async function buildReport(tempExportDir: string, exportDir: string) {
@@ -137,7 +142,6 @@ async function buildReport(tempExportDir: string, exportDir: string) {
   const tempLicensesFile = path.join(tempExportDir, "licenses.json");
   
   const licenses: LicenseInfo[] = JSON.parse(await fs.promises.readFile(tempLicensesFile, "utf-8"));
-  console.log(await toMarkdownTable(licenses));
   await addLicenseText(licenses, tempExportDir);
 
   const licensesHtml = await buildHtml(licenses);
@@ -146,23 +150,22 @@ async function buildReport(tempExportDir: string, exportDir: string) {
 
 async function addLicenseText(licenses: LicenseInfo[], tempExportDir: string) {
   for (const license of licenses) {
-    const licenseTextFile = path.join(tempExportDir, `${license.PackageId}__${license.PackageVersion}.txt`);
-    if (fs.existsSync(licenseTextFile)) {
-      license.LicenseText = await fs.promises.readFile(licenseTextFile, "utf-8");
-    } else {
-      await addLicenseTextFromHtml(license, tempExportDir);
+    const base = path.join(tempExportDir, `${license.PackageId}__${license.PackageVersion}`);
+
+    const txtPath = `${base}.txt`;
+    if (fs.existsSync(txtPath)) {
+      license.LicenseText = await fs.promises.readFile(txtPath, "utf-8");
+      continue;
+    }
+
+    const htmlPath = `${base}.html`;
+    if (fs.existsSync(htmlPath)) {
+      const html = await fs.promises.readFile(htmlPath, "utf-8");
+      license.LicenseText = await extractTextFromHtml(html);
     }
   }
 }
 
-async function addLicenseTextFromHtml(license: LicenseInfo, tempExportDir: string) {
-  const licenseHtmlFile = path.join(tempExportDir, `${license.PackageId}__${license.PackageVersion}.html`);
-
-  if (fs.existsSync(licenseHtmlFile)) {
-    const htmlText = await fs.promises.readFile(licenseHtmlFile, "utf-8");
-    license.LicenseText = await extractTextFromHtml(htmlText);
-  }
-}
 
 async function buildHtml(licenses: LicenseInfo[]): Promise<string> {
   const template = `<html><body><h1>License Notes</h1>
@@ -194,19 +197,5 @@ async function extractTextFromHtml(htmlString: string): Promise<string> {
   parser.end();
   return text;
 }
-
-async function toMarkdownTable(licenses: LicenseInfo[]): Promise<string> {
-  const header = [
-    '| Reference                                | Version    | License Type    | License                                                                |',
-    '|------------------------------------------|------------|-----------------|------------------------------------------------------------------------|'
-  ];
-  
-  const rows = licenses.map(({ PackageId, PackageVersion, License, LicenseUrl }) => {
-    return `| ${PackageId?.padEnd(40)} | ${PackageVersion?.padEnd(10)} | ${License?.padEnd(15)} | ${LicenseUrl?.padEnd(70)} |`;
-  });
-  
-  return [...header, ...rows].join('\n');
-}
-
 run();
 
