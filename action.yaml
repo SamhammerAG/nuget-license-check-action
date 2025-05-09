@@ -4,16 +4,18 @@ inputs:
   projectDir:
     description: 'Directory with .sln file to check'
     default: '.'
-    required: true  
+    required: true
+  solutionFileName:
+    description: 'Filename of the .sln file to check (e.g. sample.sln)'
+    required: true
   allowedLicenses:
     description: 'Allowed licenses as SPDX list e.g. MIT;Apache-2.0'
     required: false
-  projectsFilter:
-    description: 'List of project patterns to skip e.g. Test.csproj;Xunit.csproj'
-    default: 'Test.csproj'
+  excludeProjects:
+    description: 'List of project patterns to skip, also support wildcard e.g. *Test.csproj;*Xunit.csproj'
     required: false
   toolVersion:
-    description: 'Specify version for dotnet tool dotnet-project-licenses'
+    description: 'Specify version for dotnet tool nuget-license'
     required: false
   exportDir:
     description: 'Directory where licenses.html should be exported to'

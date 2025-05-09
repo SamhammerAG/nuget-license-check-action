@@ -1,7 +1,8 @@
 [
   {
-    "PackageName": "CompareNETObjects",
-    "PackageVersion": "4.78.0",
-    "LicenseType": "MS-PL"
-  }  
+    "Id": "CompareNETObjects",
+    "Version": "4.78.0",
+    "License": "MS-PL",
+    "LicenseUrl": "https://www.nuget.org/packages/CompareNETObjects/4.78.0/License"
+  }   
 ]

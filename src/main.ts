@@ -7,6 +7,7 @@ import minimist from "minimist";
 import chain from "lodash";
 import {v4 as uuidv4} from "uuid";
 import mustache from "mustache";
+import { Parser } from "htmlparser2";
 
 interface LicenseInfoRepo {
   Type: string;
@@ -15,22 +16,21 @@ interface LicenseInfoRepo {
 }
 
 interface LicenseInfo {
-  PackageName: string;
+  PackageId: string;
   PackageVersion: string;
-  PackageUrl: string;
-  Copyright: string;
+  PackageProjectUrl: string;
+  CopyRight: string;
   Authors: string[];
-  Description: string;
+  License: string;
   LicenseUrl: string;
-  LicenseType: string;
-  Repository: LicenseInfoRepo;
+  LicenseInformationOrigin: number;
   LicenseText?: string;
 }
 
 const argv = minimist(process.argv.slice(2));
 
 async function installTool(): Promise<void> {
-  const installArgs = ["tool", "install", "-g", "dotnet-project-licenses"];
+  const installArgs = ["tool", "install", "-g", "nuget-license"];
 
   const toolVersion = core.getInput("toolVersion");
   if (toolVersion) {
@@ -53,35 +53,43 @@ async function run(): Promise<void> {
     await installTool();
 
     const projectDir: string = argv.projectDir ?? core.getInput("projectDir");
-    const projectsFilter: string = argv.projectsFilter ?? core.getInput("projectsFilter");
+    const solutionFileName: string = argv.solutionFileName ?? core.getInput("solutionFileName");
+
+    const solutionPath = path.join(projectDir, solutionFileName);
+
+    const excludeProjects: string = argv.excludeProjects ?? core.getInput("excludeProjects");
     const allowedLicenses: string = argv.allowedLicenses ?? core.getInput("allowedLicenses");
     const exportDir = argv.exportDir ?? core.getInput("exportDir");
-    const tempExportDir = path.join(os.tmpdir(), uuidv4());
 
-    const args = ["--input", projectDir, "--unique"];
-    await addProjectsFilter(args, projectsFilter);
+    const args = ["--input", solutionPath];
+
+    await addExcludeProjects(args, excludeProjects);
     await addAllowedLicenses(args, allowedLicenses);
     await addLicenseUrlMappings(args, projectDir);
     await addLicensePackageMappings(args, projectDir);
-    await addExportOptions(args, exportDir, tempExportDir);
+    await addIgnorePackages(args, projectDir);
+    
+    // The duplicate exec is intentional, when using export options, there is no CLI output.
+    // Therefore, we must run exec twice, once to capture the output and once to perform the export.
+    await exec("nuget-license", args);
+    if (!exportDir) {
+      return;
+    }
 
-    await exec("dotnet-project-licenses", args);
-
+    const tempExportDir = await addExportOptions(args, exportDir);
+    await exec("nuget-license", args);
     await buildReport(tempExportDir, exportDir);
   } catch (error: unknown) {
     core.setFailed((error as { message: string }).message);
   }
 }
 
-async function addProjectsFilter(args: string[], projectsFilter: string) {
-  const projectsFilterFile = path.join(os.tmpdir(), "projectsFilter.json");
-  const projectsFilterList = chain(projectsFilter)
-    .split(";")
-    .filter((x) => x.length > 0)
-    .value();
+async function addExcludeProjects(args: string[], excludeProjects: string) {
+  if (!excludeProjects) {
+    return;
+  }
 
-  await fs.promises.writeFile(projectsFilterFile, JSON.stringify(projectsFilterList));
-  args.push("--projects-filter", projectsFilterFile);
+  args.push("--exclude-projects-matching", excludeProjects);
 }
 
 async function addAllowedLicenses(args: string[], allowedLicenses: string) {
@@ -105,17 +113,27 @@ async function addLicenseUrlMappings(args: string[], projectDir: string) {
 async function addLicensePackageMappings(args: string[], projectDir: string) {
   const licenseInfoFile = path.join(projectDir, "licenseInfos.json");
   if (fs.existsSync(licenseInfoFile)) {
-    args.push("--manual-package-information", licenseInfoFile);
+    args.push("--override-package-information", licenseInfoFile);
+  } 
+}
+
+async function addIgnorePackages(args: string[], projectDir: string) {
+  const ignorePackagesFile = path.join(projectDir, "ignorePackages.json");
+  if (fs.existsSync(ignorePackagesFile)) {
+    args.push("--ignored-packages", ignorePackagesFile);
   }
 }
 
-async function addExportOptions(args: string[], exportDir: string, tempExportDir: string) {
-  if (!exportDir) return;
+async function addExportOptions(args: string[], exportDir: string): Promise<string> {
+  if (!exportDir) return "";
+  const tempExportDir = path.join(os.tmpdir(), uuidv4());
 
-  args.push("--output-directory", tempExportDir);
-  args.push("--json", tempExportDir);
-  args.push("--export-license-texts");
-  args.push("--convert-html-to-text");
+  const fileOutput = path.join(tempExportDir, "licenses.json");
+  args.push("--file-output", fileOutput);
+  args.push("--output", "json");
+  args.push("--license-information-download-location", tempExportDir);
+
+  return tempExportDir;
 }
 
 async function buildReport(tempExportDir: string, exportDir: string) {
@@ -133,21 +151,52 @@ async function buildReport(tempExportDir: string, exportDir: string) {
 
 async function addLicenseText(licenses: LicenseInfo[], tempExportDir: string) {
   for (const license of licenses) {
-    const licenseTextFile = path.join(tempExportDir, `${license.PackageName}_${license.PackageVersion}.txt`);
-    if (fs.existsSync(licenseTextFile)) {
-      license.LicenseText = await fs.promises.readFile(licenseTextFile, "utf-8");
+    const base = path.join(tempExportDir, `${license.PackageId}__${license.PackageVersion}`);
+
+    const txtPath = `${base}.txt`;
+    if (fs.existsSync(txtPath)) {
+      license.LicenseText = await fs.promises.readFile(txtPath, "utf-8");
+      continue;
+    }
+
+    const htmlPath = `${base}.html`;
+    if (fs.existsSync(htmlPath)) {
+      const html = await fs.promises.readFile(htmlPath, "utf-8");
+      license.LicenseText = await extractTextFromHtml(html);
     }
   }
 }
 
+
 async function buildHtml(licenses: LicenseInfo[]): Promise<string> {
   const template = `<html><body><h1>License Notes</h1>
-    {{#.}}<b>{{PackageName}}</b> - {{LicenseType}}
+    {{#.}}<b>{{PackageId}}</b> - {{License}}
     <p>{{LicenseText}}</p>{{/.}}
   </body></html>`;
 
   return mustache.render(template, licenses);
 }
 
+async function extractTextFromHtml(htmlString: string): Promise<string> {
+  let text = '';
+  const parser = new Parser(
+    {
+      ontext(chunk: string) {
+        text += chunk;
+      },
+      onerror(err: Error) {
+        console.error('HTML parse error:', err);
+      }
+    },
+    {
+      decodeEntities: true,
+      xmlMode: false
+    }
+  );
+
+  parser.write(htmlString);
+  parser.end();
+  return text;
+}
 run();
 
